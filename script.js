@@ -1,75 +1,109 @@
-let character;
-let score = 0;
-let projectiles = [];
-let gameRunning = true;
+document.body.addEventListener('wheel', function(event) {
+    const character = document.getElementById('character');
+    let topValue = parseInt(window.getComputedStyle(character).getPropertyValue('top'));
 
-function setup() {
-  let canvasWidth = windowWidth - 100;
-  let canvasHeight = windowHeight / 4;
-  let canvas = createCanvas(canvasWidth, canvasHeight);
-  canvas.parent('gameContainer'); // Optional: to place the canvas in a specific div
-  character = createSprite(width / 10, height / 2, 50, 50);
-}
-
-function draw() {
-  background(200);
-
-  if (gameRunning) {
-    handleInput();
-    handleProjectiles();
-    drawSprites();
-    displayScore();
-  } else {
-    showGameOver();
-  }
-}
-
-function handleInput() {
-  // Replace with mouseWheel event if needed
-  if (mouseIsPressed) {
-    character.position.y -= 5;
-  } else {
-    character.position.y += 5;
-  }
-  character.position.y = constrain(character.position.y, character.height / 2, height - character.height / 2);
-}
-
-function handleProjectiles() {
-  // Generate projectiles less frequently
-  if (frameCount % 90 === 0) {
-    let size = random(10, 40);
-    let speed = random(4, 8); // Increased speed
-    let projectile = createSprite(width + size / 2, random(size / 2, height - size / 2), size, size / 2);
-    projectile.setSpeed(speed, 180);
-    projectiles.push(projectile);
-  }
-
-  // Move and draw projectiles
-  for (let i = projectiles.length - 1; i >= 0; i--) {
-    let projectile = projectiles[i];
-    if (projectile.position.x < 0) {
-      projectile.remove();
-      projectiles.splice(i, 1);
-    } else if (projectile.overlap(character)) {
-      gameRunning = false;
+    if (event.deltaY < 0) {
+        topValue -= 10; // Move up
+    } else {
+        topValue += 10; // Move down
     }
-  }
+
+    topValue = Math.max(0, Math.min(topValue, window.innerHeight - character.offsetHeight));
+    character.style.top = topValue + 'px';
+});
+
+let score = 0;
+
+function updateScore() {
+    document.getElementById('score').textContent = `Score: ${score}`;
 }
 
-function displayScore() {
-  fill(0);
-  textSize(16);
-  text(`Score: ${score}`, 10, 20);
+// Let's run the game loop at a more typical frame rate
+setInterval(gameLoop, 1000 / 60); // 60 FPS
+
+let gameRunning = true;
+const projectiles = [];
+
+function gameLoop() {
+    if (!gameRunning) return;
+
+    moveProjectiles();
+
+    // Create projectiles more frequently
+    if (Math.random() < 0.2) { // Adjust spawn rate as needed
+        createProjectile();
+    }
 }
 
-function showGameOver() {
-  fill(255, 0, 0);
-  textSize(32);
-  textAlign(CENTER, CENTER);
-  text(`Game Over! Your score was: ${score}`, width / 2, height / 2);
+function createProjectile() {
+    const gameArea = document.getElementById('gameArea');
+    const projectile = document.createElement('div');
+    let type = Math.random();
+
+    if (type < 0.3) {
+        projectile.className = 'projectile large';
+    } else if (type < 0.6) {
+        projectile.className = 'projectile small';
+    } else {
+        projectile.className = 'projectile coin';
+    }
+
+    projectile.style.top = Math.random() * (gameArea.offsetHeight - 20) + 'px';
+    projectile.style.left = gameArea.offsetWidth + 'px'; // Start just outside the game area
+    gameArea.appendChild(projectile);
+    projectiles.push(projectile);
 }
 
-// Optional: Handle mouse wheel event for character movement
-function mouseWheel(event) {
-  character.position.y += event.delta;
+function moveProjectiles() {
+    projectiles.forEach(projectile => {
+        let speed;
+        if (projectile.classList.contains('large')) {
+            speed = 1; // Large and slow
+        } else if (projectile.classList.contains('small')) {
+            speed = 4; // Small and fast
+        } else if (projectile.classList.contains('coin')) {
+            speed = 2; // Coin speed
+        }
+
+        let currentPosition = parseInt(projectile.style.left, 10);
+        projectile.style.left = `${currentPosition - speed}px`;
+
+        if (detectCollision(projectile, document.getElementById('character'))) {
+            if (projectile.classList.contains('coin')) {
+                score += 10;
+                updateScore();
+            } else {
+                gameRunning = false;
+                alert(`Game Over! Your score was: ${score}`);
+            }
+            projectile.remove();
+            projectiles.splice(projectiles.indexOf(projectile), 1);
+        }
+
+        // Remove the projectile if it's gone past the left edge
+        if (currentPosition < -projectile.offsetWidth) {
+            projectile.remove();
+            projectiles.splice(projectiles.indexOf(projectile), 1);
+        }
+    });
 }
+
+function detectCollision(projectile, character) {
+    const projectileRect = projectile.getBoundingClientRect();
+    const characterRect = character.getBoundingClientRect();
+
+    return !(
+        projectileRect.top > characterRect.bottom ||
+        projectileRect.right < characterRect.left ||
+        projectileRect.bottom < characterRect.top ||
+        projectileRect.left > characterRect.right
+    );
+}
+
+// Set up the score display
+document.addEventListener('DOMContentLoaded', () => {
+    const scoreDiv = document.createElement('div');
+    scoreDiv.id = 'score';
+    scoreDiv.textContent = `Score: ${score}`;
+    document.body.appendChild(scoreDiv);
+});
