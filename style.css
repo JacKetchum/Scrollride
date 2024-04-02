@@ -3,6 +3,7 @@ body, html {
     padding: 0;
     overflow: hidden;
     height: 100%;
+    font-family: Arial, sans-serif;
 }
 
 #gameArea {
@@ -16,18 +17,46 @@ body, html {
     position: absolute;
     width: 50px;
     height: 50px;
-    background-color: #000;
+    background-color: #444;
     border-radius: 50%;
     top: 50%;
-    left: 50px; /* The character starts 50px from the left */
+    left: 50px;
     transform: translateY(-50%);
+}
+
+#score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 24px;
+    color: #333;
 }
 
 .projectile {
     position: absolute;
-    width: 20px;
-    height: 20px;
-    background-color: red;
-    right: 0; /* Projectiles start off the screen on the right */
+    background-color: #f00;
 }
 
+.projectile.large {
+    width: 40px;
+    height: 20px;
+    background-color: blue;
+}
+
+.projectile.small {
+    width: 20px;
+    height: 10px;
+    background-color: red;
+}
+
+.projectile.coin {
+    width: 10px;
+    height: 10px;
+    background-color: gold;
+    border-radius: 50%;
+}
+
+/* Ensure projectiles start off-screen */
+.projectile {
+    left: 100%;
+}

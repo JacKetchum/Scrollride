@@ -1,80 +1,75 @@
-document.body.addEventListener('wheel', function(event) {
-    const character = document.getElementById('character');
-    let topValue = parseInt(window.getComputedStyle(character).getPropertyValue('top'));
-
-    // Scroll to change the elevation of the character
-    if (event.deltaY < 0) {
-        topValue -= 10; // Move up
-    } else {
-        topValue += 10; // Move down
-    }
-
-    // Keep the character within the bounds of the game area
-    topValue = Math.max(0, Math.min(topValue, window.innerHeight - 50)); // 50 is the height of the character
-
-    character.style.top = topValue + 'px';
-});
-
-// Run the game loop every 20ms
-setInterval(gameLoop, 20);
-
-// The game state
+let character;
+let score = 0;
+let projectiles = [];
 let gameRunning = true;
-const projectiles = [];
 
-function gameLoop() {
-    if (!gameRunning) return;
-
-    // Move projectiles
-    moveProjectiles();
-
-    // Spawn a new projectile every 2 seconds
-    if (Date.now() % 2000 < 20) {
-        createProjectile();
-    }
-
-    // Collision detection
-    projectiles.forEach(projectile => {
-        if (detectCollision(projectile, document.getElementById('character'))) {
-            gameRunning = false;
-            alert('Game Over!');
-            // You can add more game over logic here
-        }
-    });
+function setup() {
+  let canvasWidth = windowWidth - 100;
+  let canvasHeight = windowHeight / 4;
+  let canvas = createCanvas(canvasWidth, canvasHeight);
+  canvas.parent('gameContainer'); // Optional: to place the canvas in a specific div
+  character = createSprite(width / 10, height / 2, 50, 50);
 }
 
-function createProjectile() {
-    const gameArea = document.getElementById('gameArea');
-    const projectile = document.createElement('div');
-    projectile.className = 'projectile';
-    projectile.style.top = Math.random() * (gameArea.offsetHeight - 20) + 'px'; // 20 is the height of the projectile
-    projectile.style.right = '-20px';
-    gameArea.appendChild(projectile);
+function draw() {
+  background(200);
+
+  if (gameRunning) {
+    handleInput();
+    handleProjectiles();
+    drawSprites();
+    displayScore();
+  } else {
+    showGameOver();
+  }
+}
+
+function handleInput() {
+  // Replace with mouseWheel event if needed
+  if (mouseIsPressed) {
+    character.position.y -= 5;
+  } else {
+    character.position.y += 5;
+  }
+  character.position.y = constrain(character.position.y, character.height / 2, height - character.height / 2);
+}
+
+function handleProjectiles() {
+  // Generate projectiles less frequently
+  if (frameCount % 90 === 0) {
+    let size = random(10, 40);
+    let speed = random(4, 8); // Increased speed
+    let projectile = createSprite(width + size / 2, random(size / 2, height - size / 2), size, size / 2);
+    projectile.setSpeed(speed, 180);
     projectiles.push(projectile);
+  }
+
+  // Move and draw projectiles
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    let projectile = projectiles[i];
+    if (projectile.position.x < 0) {
+      projectile.remove();
+      projectiles.splice(i, 1);
+    } else if (projectile.overlap(character)) {
+      gameRunning = false;
+    }
+  }
 }
 
-function moveProjectiles() {
-    projectiles.forEach(projectile => {
-        let currentPosition = parseInt(projectile.style.right, 10);
-        currentPosition += 5; // Speed of the projectile
-        projectile.style.right = `${currentPosition}px`;
-
-        // Remove the projectile if it goes off screen
-        if (currentPosition > gameArea.offsetWidth) {
-            projectile.parentNode.removeChild(projectile);
-            projectiles.splice(projectiles.indexOf(projectile), 1);
-        }
-    });
+function displayScore() {
+  fill(0);
+  textSize(16);
+  text(`Score: ${score}`, 10, 20);
 }
 
-function detectCollision(projectile, character) {
-    const projectileRect = projectile.getBoundingClientRect();
-    const characterRect = character.getBoundingClientRect();
+function showGameOver() {
+  fill(255, 0, 0);
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  text(`Game Over! Your score was: ${score}`, width / 2, height / 2);
+}
 
-    return !(
-        projectileRect.top > characterRect.bottom ||
-        projectileRect.right < characterRect.left ||
-        projectileRect.bottom < characterRect.top ||
-        projectileRect.left > characterRect.right
-    );
+// Optional: Handle mouse wheel event for character movement
+function mouseWheel(event) {
+  character.position.y += event.delta;
 }
