@@ -1,0 +1,33 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+#gameArea {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+#character {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #000;
+    border-radius: 50%;
+    top: 50%;
+    left: 50px; /* The character starts 50px from the left */
+    transform: translateY(-50%);
+}
+
+.projectile {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    right: 0; /* Projectiles start off the screen on the right */
+}
+
