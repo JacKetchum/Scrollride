@@ -18,7 +18,7 @@ function updateScore() {
     document.getElementById('score').textContent = `Score: ${score}`;
 }
 
-// Let's run the game loop at a more typical frame rate
+// Set the game loop to run at a typical frame rate
 setInterval(gameLoop, 1000 / 60); // 60 FPS
 
 let gameRunning = true;
@@ -29,8 +29,8 @@ function gameLoop() {
 
     moveProjectiles();
 
-    // Create projectiles more frequently
-    if (Math.random() < 0.2) { // Adjust spawn rate as needed
+    // Create projectiles with a lower probability for less frequency
+    if (Math.random() < 0.1) {
         createProjectile();
     }
 }
@@ -42,28 +42,24 @@ function createProjectile() {
 
     if (type < 0.3) {
         projectile.className = 'projectile large';
+        projectile.speed = 3; // Increased speed for large projectiles
     } else if (type < 0.6) {
         projectile.className = 'projectile small';
+        projectile.speed = 7; // Increased speed for small projectiles
     } else {
         projectile.className = 'projectile coin';
+        projectile.speed = 4; // Increased speed for coins
     }
 
     projectile.style.top = Math.random() * (gameArea.offsetHeight - 20) + 'px';
-    projectile.style.left = gameArea.offsetWidth + 'px'; // Start just outside the game area
+    projectile.style.left = gameArea.offsetWidth + 'px';
     gameArea.appendChild(projectile);
     projectiles.push(projectile);
 }
 
 function moveProjectiles() {
     projectiles.forEach(projectile => {
-        let speed;
-        if (projectile.classList.contains('large')) {
-            speed = 1; // Large and slow
-        } else if (projectile.classList.contains('small')) {
-            speed = 4; // Small and fast
-        } else if (projectile.classList.contains('coin')) {
-            speed = 2; // Coin speed
-        }
+        let speed = projectile.speed; // Use the assigned speed for each projectile
 
         let currentPosition = parseInt(projectile.style.left, 10);
         projectile.style.left = `${currentPosition - speed}px`;
@@ -80,7 +76,7 @@ function moveProjectiles() {
             projectiles.splice(projectiles.indexOf(projectile), 1);
         }
 
-        // Remove the projectile if it's gone past the left edge
+        // Remove the projectile if it's gone past the left edge of the game area
         if (currentPosition < -projectile.offsetWidth) {
             projectile.remove();
             projectiles.splice(projectiles.indexOf(projectile), 1);

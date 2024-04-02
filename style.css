@@ -55,8 +55,3 @@ body, html {
     background-color: gold;
     border-radius: 50%;
 }
-
-/* Ensure projectiles start off-screen */
-.projectile {
-    left: 100%;
-}
