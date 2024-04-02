@@ -42,16 +42,23 @@ function createProjectile() {
 
     if (type < 0.3) {
         projectile.className = 'projectile large';
-        projectile.speed = 3; // Increased speed for large projectiles
+        projectile.speed = 3;
+        projectile.style.width = '80px'; // Size increased from 40px
+        projectile.style.height = '40px'; // Size increased from 20px
     } else if (type < 0.6) {
         projectile.className = 'projectile small';
-        projectile.speed = 7; // Increased speed for small projectiles
+        projectile.speed = 7;
+        projectile.style.width = '40px'; // Size increased from 20px
+        projectile.style.height = '20px'; // Size increased from 10px
     } else {
         projectile.className = 'projectile coin';
-        projectile.speed = 4; // Increased speed for coins
+        projectile.speed = 4;
+        projectile.style.width = '20px'; // Size increased from 10px
+        projectile.style.height = '20px'; // Size increased for consistency
     }
 
-    projectile.style.top = Math.random() * (gameArea.offsetHeight - 20) + 'px';
+    projectile.style.backgroundColor = type < 0.3 ? 'blue' : type < 0.6 ? 'red' : 'gold'; // Assign color
+    projectile.style.top = Math.random() * (gameArea.offsetHeight - parseInt(projectile.style.height)) + 'px';
     projectile.style.left = gameArea.offsetWidth + 'px';
     gameArea.appendChild(projectile);
     projectiles.push(projectile);
